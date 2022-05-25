@@ -13,3 +13,4 @@ Zapiranje steklenic 1: S tipko A aktiviramo gibanje enosmernega cilindra navzdol
 
 https://user-images.githubusercontent.com/104895067/169010130-e8c8abb7-a8f2-4f42-94fb-4c96b4e711cc.mp4
 
+Komentar: Zdi se nama, da je delovanje kode dobro in izboljšave niso potrebne.
