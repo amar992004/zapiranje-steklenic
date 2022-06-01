@@ -7,10 +7,10 @@ Zapiranje steklenic 1: S tipko A aktiviramo gibanje enosmernega cilindra navzdol
 <img width="662" alt="Screenshot 2022-05-18 at 11 14 24" src="https://user-images.githubusercontent.com/104895067/169003886-da92284c-4924-4898-8227-0a5fc71a1fb1.png">
 <img width="846" alt="Screenshot 2022-05-18 at 11 27 12" src="https://user-images.githubusercontent.com/104895067/169006609-fea7501b-d4d9-4d76-ac95-9145866271cb.png">
 <img width="1002" alt="Screenshot 2022-05-18 at 11 25 10" src="https://user-images.githubusercontent.com/104895067/169006645-261167c1-88f4-49e4-a414-d7d8d197835f.png">
-<img width="590" alt="Screenshot 2022-05-18 at 11 28 27" src="https://user-images.githubusercontent.com/104895067/169006993-503ad920-649b-44ec-9a19-fea9ebfc6df1.png">
+
 
 
 
 https://user-images.githubusercontent.com/104895067/169010130-e8c8abb7-a8f2-4f42-94fb-4c96b4e711cc.mp4
 
-Komentar: Zdi se nama, da je delovanje kode dobro in izboljšave niso potrebne.
+Komentar: S projektom sva zadovoljna, nisva imela posebnih težav. Vse dela po navodilih.
