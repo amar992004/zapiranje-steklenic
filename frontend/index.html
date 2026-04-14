@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="sl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AAE gradnje | Računi</title>
+    <style>
+      body { font-family: Arial, sans-serif; background:#f6f7fb; margin:0; color:#1f2937; }
+      .wrap { max-width:1100px; margin:2rem auto; padding:1rem; }
+      .card { background:white; border-radius:12px; padding:1rem; margin-bottom:1rem; box-shadow:0 8px 18px rgba(0,0,0,.05); }
+      .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:.75rem; }
+      input, select, button { padding:.6rem; border-radius:8px; border:1px solid #d1d5db; }
+      button { background:#0f766e; color:white; border:none; cursor:pointer; }
+      table { width:100%; border-collapse: collapse; }
+      th, td { text-align:left; padding:.5rem; border-bottom:1px solid #e5e7eb; font-size:.9rem; }
+      .hidden { display:none; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>AAE gradnje – Upravljanje računov</h1>
+
+      <section class="card" id="authCard">
+        <h3>Prijava</h3>
+        <div class="grid">
+          <input id="email" placeholder="E-pošta" />
+          <input id="password" placeholder="Geslo" type="password" />
+          <button onclick="login()">Prijava</button>
+        </div>
+      </section>
+
+      <section class="card hidden" id="invoiceCard">
+        <h3>Nov račun</h3>
+        <div class="grid">
+          <input id="invoiceNumber" placeholder="Številka računa" />
+          <input id="issueDate" type="date" />
+          <input id="clientName" placeholder="Stranka" />
+          <input id="amount" type="number" step="0.01" placeholder="Znesek" />
+          <select id="status">
+            <option value="issued">Izdan</option>
+            <option value="paid">Plačan</option>
+            <option value="draft">Osnutek</option>
+            <option value="overdue">Zapadel</option>
+          </select>
+          <input id="description" placeholder="Opis" />
+          <button onclick="createInvoice()">Shrani račun</button>
+        </div>
+      </section>
+
+      <section class="card hidden" id="reportCard">
+        <h3>Mesečna evidenca</h3>
+        <pre id="reportOutput">Naloži se ...</pre>
+      </section>
+
+      <section class="card hidden" id="listCard">
+        <h3>Računi</h3>
+        <div class="grid">
+          <input id="search" placeholder="Išči po stranki/št. računa" />
+          <button onclick="loadInvoices()">Osveži seznam</button>
+        </div>
+        <table>
+          <thead><tr><th>Številka</th><th>Datum</th><th>Stranka</th><th>Znesek</th><th>Status</th><th>PDF</th></tr></thead>
+          <tbody id="invoiceRows"></tbody>
+        </table>
+      </section>
+    </div>
+
+    <script>
+      let token = localStorage.getItem('token');
+      if (token) showApp();
+
+      async function api(path, options = {}) {
+        const headers = options.headers || {};
+        if (token) headers.Authorization = `Bearer ${token}`;
+        if (!(options.body instanceof FormData)) headers['Content-Type'] = 'application/json';
+        const res = await fetch(path, { ...options, headers });
+        if (!res.ok) throw new Error((await res.json()).message || 'Napaka');
+        if (res.status === 204) return null;
+        return res.json();
+      }
+
+      async function login() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const data = await api('/api/auth/login', { method:'POST', body: JSON.stringify({ email, password }) });
+        token = data.token;
+        localStorage.setItem('token', token);
+        showApp();
+      }
+
+      function showApp() {
+        ['invoiceCard','listCard','reportCard'].forEach(id => document.getElementById(id).classList.remove('hidden'));
+        document.getElementById('authCard').classList.add('hidden');
+        loadInvoices();
+        loadReport();
+      }
+
+      async function createInvoice() {
+        const payload = {
+          invoiceNumber: document.getElementById('invoiceNumber').value,
+          issueDate: document.getElementById('issueDate').value,
+          clientName: document.getElementById('clientName').value,
+          amount: Number(document.getElementById('amount').value),
+          status: document.getElementById('status').value,
+          description: document.getElementById('description').value
+        };
+        await api('/api/invoices', { method:'POST', body: JSON.stringify(payload) });
+        await loadInvoices();
+        await loadReport();
+        alert('Račun shranjen.');
+      }
+
+      async function loadInvoices() {
+        const q = document.getElementById('search').value || '';
+        const data = await api(`/api/invoices?q=${encodeURIComponent(q)}&limit=50`);
+        const rows = document.getElementById('invoiceRows');
+        rows.innerHTML = '';
+        data.data.forEach(inv => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${inv.invoiceNumber}</td><td>${inv.issueDate}</td><td>${inv.clientName}</td><td>${Number(inv.amount).toFixed(2)} €</td><td>${inv.status}</td><td><a href="/api/invoices/${inv.id}/pdf" target="_blank">Odpri</a></td>`;
+          rows.appendChild(tr);
+        });
+      }
+
+      async function loadReport() {
+        const data = await api('/api/reports/monthly');
+        document.getElementById('reportOutput').textContent = JSON.stringify(data, null, 2);
+      }
+    </script>
+  </body>
+</html>
