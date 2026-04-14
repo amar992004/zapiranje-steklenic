@@ -19,14 +19,18 @@ npm start
 ```
 Aplikacija teče na `http://localhost:3000`.
 
+Privzeto se ob zagonu samodejno ustvari admin račun (če še ne obstaja):
+- e-pošta: `admin@aae.si`
+- geslo: `Admin12345!`
+
 ## 1) Priprava uporabnika (prvi zagon)
-Ker je aplikacija nova, najprej registriraj admin uporabnika:
+Lahko se takoj prijaviš s privzetim računom ali pa ustvariš novega preko UI gumba **Registracija**.
+Če želiš registrirati preko API:
 ```bash
 curl -X POST http://localhost:3000/api/auth/register \
   -H 'Content-Type: application/json' \
   -d '{"fullName":"AAE Admin","email":"admin@aae.si","password":"MojeGeslo123"}'
 ```
-Nato se prijaviš preko UI.
 
 ## 2) Uvoz obstoječih PDF računov
 1. Ustvari mapo `existing-pdf/`.

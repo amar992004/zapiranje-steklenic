@@ -11,9 +11,12 @@
       .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:.75rem; }
       input, select, button { padding:.6rem; border-radius:8px; border:1px solid #d1d5db; }
       button { background:#0f766e; color:white; border:none; cursor:pointer; }
+      .secondary { background:#334155; }
       table { width:100%; border-collapse: collapse; }
       th, td { text-align:left; padding:.5rem; border-bottom:1px solid #e5e7eb; font-size:.9rem; }
       .hidden { display:none; }
+      .error { color:#b91c1c; margin-top:.5rem; }
+      .hint { color:#475569; font-size:.9rem; margin-top:.5rem; }
     </style>
   </head>
   <body>
@@ -21,12 +24,16 @@
       <h1>AAE gradnje – Upravljanje računov</h1>
 
       <section class="card" id="authCard">
-        <h3>Prijava</h3>
+        <h3>Prijava / registracija</h3>
         <div class="grid">
-          <input id="email" placeholder="E-pošta" />
-          <input id="password" placeholder="Geslo" type="password" />
+          <input id="fullName" placeholder="Ime in priimek (za registracijo)" />
+          <input id="email" placeholder="E-pošta" value="admin@aae.si" />
+          <input id="password" placeholder="Geslo" type="password" value="Admin12345!" />
           <button onclick="login()">Prijava</button>
+          <button class="secondary" onclick="register()">Registracija</button>
         </div>
+        <div class="hint">Za hiter test lahko uporabiš privzeti račun: admin@aae.si / Admin12345!</div>
+        <div id="authError" class="error"></div>
       </section>
 
       <section class="card hidden" id="invoiceCard">
@@ -69,23 +76,55 @@
       let token = localStorage.getItem('token');
       if (token) showApp();
 
+      function setError(message = '') {
+        document.getElementById('authError').textContent = message;
+      }
+
       async function api(path, options = {}) {
         const headers = options.headers || {};
         if (token) headers.Authorization = `Bearer ${token}`;
         if (!(options.body instanceof FormData)) headers['Content-Type'] = 'application/json';
         const res = await fetch(path, { ...options, headers });
-        if (!res.ok) throw new Error((await res.json()).message || 'Napaka');
+
+        if (!res.ok) {
+          const errorPayload = await res.json().catch(() => ({ message: 'Napaka pri klicu API.' }));
+          throw new Error(errorPayload.message || 'Napaka');
+        }
+
         if (res.status === 204) return null;
         return res.json();
       }
 
+      async function register() {
+        try {
+          setError();
+          const fullName = document.getElementById('fullName').value || 'AAE Uporabnik';
+          const email = document.getElementById('email').value;
+          const password = document.getElementById('password').value;
+          const data = await api('/api/auth/register', {
+            method:'POST',
+            body: JSON.stringify({ fullName, email, password })
+          });
+          token = data.token;
+          localStorage.setItem('token', token);
+          showApp();
+        } catch (e) {
+          setError(e.message);
+        }
+      }
+
       async function login() {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const data = await api('/api/auth/login', { method:'POST', body: JSON.stringify({ email, password }) });
-        token = data.token;
-        localStorage.setItem('token', token);
-        showApp();
+        try {
+          setError();
+          const email = document.getElementById('email').value;
+          const password = document.getElementById('password').value;
+          const data = await api('/api/auth/login', { method:'POST', body: JSON.stringify({ email, password }) });
+          token = data.token;
+          localStorage.setItem('token', token);
+          showApp();
+        } catch (e) {
+          setError(e.message);
+        }
       }
 
       function showApp() {

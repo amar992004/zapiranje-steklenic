@@ -7,6 +7,7 @@ import authRoutes from './routes/auth.js';
 import invoiceRoutes from './routes/invoices.js';
 import reportRoutes from './routes/reports.js';
 import { requireAuth } from './middleware/authMiddleware.js';
+import { ensureDefaultAdmin } from './utils/bootstrap.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -33,6 +34,11 @@ app.get('*', (_req, res) => {
   res.sendFile(path.resolve('frontend/index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`AAE gradnje app teče na http://localhost:${PORT}`);
+ensureDefaultAdmin().then((seed) => {
+  app.listen(PORT, () => {
+    console.log(`AAE gradnje app teče na http://localhost:${PORT}`);
+    if (seed.created) {
+      console.log(`Privzeti admin ustvarjen: ${seed.email} / ${seed.password}`);
+    }
+  });
 });
